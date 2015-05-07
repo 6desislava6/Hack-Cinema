@@ -1,0 +1,194 @@
+commands_for_tomorrow:
+===============
+
+0.
+tableID
+#The name of the tables with seats
+seats_projectionID = 'Seats_{}'.format(tableID)
+
+1. --CreateDB---
+#When adding new projection, make new seats_table
+self.cursor.execute('''CREATE TABLE ?(seat_id INTEGER PRIMARY KEY, free INTEGER);
+''', (seats_projectionID,))
+
+# Making free seats in seats_projectionID
+for i in range(0, COL_SIZE*ROW_SIZE):
+    self.cursor.execute('''INSERT INTO ?(free) Values(0)''',(seats_projectionID,))
+
+2.  --CreateDB---
+# Checking if there are enough seats in a projection
+def are_enough_seats(self, wanted_seats, seats_projectionID):
+    data = self.cursor.execute('''SELECT Count(seat_id), Free FROM ? WHERE Free = 1 GROUP BY Free;''', (seats_projectionID,))
+    free_seats = data['Count(seat_id)']
+        return free_seats < wanted_seats
+
+3.  --CreateDB---
+#Get all available:
+def get_available_seats(self):
+    free_seats = []
+    data = self.cursor.execute('''SELECT seat_id FROM ? where Free = 1;''', (seats_projectionID,))
+    for line in data:
+        free_seats.append(self.__hash(line['seat_id']))
+    return free_seats
+    # free_seats is a set of tuples!
+
+4.  --CreateDB---
+def __hash(id):
+    row = id // ROW_SIZE
+    col = id % COL_SIZE
+    return (row, col)
+
+5. --IO--
+# Process of buying tickets
+
+def buy_tickets(db):
+    wanted_tickets = input('Quantity of tickets>')
+
+    print('Choose a movie')
+    IO.show_movies(db)
+    movie_id = input('movie_id>')
+
+    print('Choose a projection')
+    IO.show_movie_projections(movie_id, db)
+    wanted_projection = input('Projection ID>')
+
+    #We seek info from this table:
+    seats_projectionID = 'Seats_{}'.format(wanted_projection)
+
+    if  not db.are_enough_seats(self, wanted_seats, seats_projectionID):
+        print('Not enough tickets!')
+        return
+
+    for x in range(wanted_tickets):
+        print('Free seats for this projection are: ')
+        free_seats = db.get_available_seats()
+        IO.print_seats(free_seats)
+        answer_customer = input('your choice (in format "( x, y), please. Otherwise it will not work :D)">')
+        is_answer_valid = self.__validating_customer_input(answer_customer, free_seats)
+
+        while (not is_answer_valid):
+            answer_customer = input('This is not a valid seat... Try again')
+            is_answer_valid = self.__validating_customer_input(answer_customer, free_seats)
+
+        seat = self.__str_to_numbers(answer_customer)
+        db.save_seat(seat)
+
+    is_finalised = input('Are you sure this is your order? answer "yes" or "no"')
+
+    # Print his/hers reservations here...!
+    ....
+
+    #If he/she said no
+    if lower(is_finalised) != 'yes':
+        db.undo_reservation(wanted_tickets)
+
+
+6.
+---IO---
+def __validating_customer_input(answer_customer, free_seats):
+free_seats_str = ''
+    for seat in free_seats:
+        free_seats_str += '({}, {})'.format(seat[0], seat[1])
+
+    if aswer_customer in free_seats_str:
+        return True
+    else:
+       return False
+
+
+7.
+---IO---
+def __str_to_numbers(answer_customer):
+    numbers = answer_customer.split(', ')
+    numers[0] = numbers[0][1:]
+    numers[1] = numbers[1][:1]
+
+
+8. --CreateDB---
+def __unhash(seat):
+    row = seat[0]
+    col = seat[1]
+    return row * ROW_SIZE + col * COL_SIZE
+
+9.  --CreateDB---
+def save_seat(seat):
+    seat_id = self.__unhash(seat)
+    *********Заявка за upgrade seat_id да е Free = 0 ********************
+
+10. --CreateDB--
+def undo_reservation(count):
+    last_id = self.db.lastrowid
+    self.cursor.execute('''delete from reservation
+    where reservations_id IN
+    (SELECT reservations_id from reservations order by reservations_id desc limit ?)''', (count, ))
+
+11. --CreateDB---
+def show_movie_projections(self, movie_id):
+    return self.cursor.execute('''SELECT * FROM projections
+                                            WHERE movie_id = ?
+                                            ORDER BY projection_date''', (movie_id, ))
+
+12. --IO__
+def show_movie_projections(self, movie_id, db):
+    projections = db.show_movie_projections(self, movie_id)
+    for projection in projections:
+            print("{}. {} - {} - {} - {}".format(projection['projections_id'],
+                                                 projection['name'],
+                                                 projection['projection_type'],
+                                                 projection['projection_date'],
+                                                 projection['time']))
+
+13.
+--IO--
+def print_commands():
+    print('Commands:')
+    print('* "show_movies"')
+    print('* "show_projections"')
+    print('* "show_movie_projections"')
+    print('* "make_reservation"')
+    print('* "help"')
+    print('* "exit"')
+
+
+14.
+В --IO--- някакъв метод menu?
+където взима input-а на customer-а и минава по гореизброените статични команди.
+
+def execute_command(db):
+
+    customer_input = input('type command>')
+
+    while(curstomer_input != 'exit'):
+        if customer_input == 'show_movies':
+            IO.show_movies(db)
+        elif customer_input == 'show_projections':
+            IO.show_projections(db)
+        elif customer_input == 'show_movie_projections':
+            movie_id = input('Movie ID>')
+            IO.show_movie_projections(movie_id, db)
+        elif customer_input == 'make_reservation':
+            IO.buy_tickets(db)
+        elif.customer_input == 'help':
+            IO.print_commands()
+        else:
+            print('Invalid command!')
+        customer_input = input('type command>')
+
+    print('Bye!')
+
+15. --IO---
+ROW_SIZE
+COL_SIZE
+
+def print_seats(free_seats):
+    matrix = [['X' for x in range(COL_SIZE)] for x in range(ROW_SIZE)]
+    for seat in free_seats:
+        matrix[seat[0]][seat[1]] = '*'
+    for x in range(COL_SIZE):
+        print(x + ' ')
+    for x in range(ROW_SIZE):
+        row = x+ ' '
+        for y in range(COL_SIZE):
+            row += matrix[x][y]
+        print(row)
+
