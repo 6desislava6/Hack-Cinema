@@ -19,16 +19,16 @@ class CreateDB:
             movie_id INTEGER,
             projection_type TEXT,
             projection_date DATE,
-            time TEXT
+            time TEXT,
             FOREIGN KEY (movie_id) REFERENCES Movies(movies_id)) """)
 
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS Reservations(
-            reservations_id INTEGER,
+            reservations_id INTEGER PRIMARY KEY,
             username TEXT,
             projection_id INTEGER
             row INTEGER,
             col INTEGER,
-            FOREIGN KEY(projection_id) REFERENCES Projections(projections_id),
+            FOREIGN KEY(projection_id) REFERENCES Projections(projections_id))
             """)
 
     def add_movie(self, name, rating):
@@ -38,7 +38,7 @@ class CreateDB:
         self.db.commit()
 
     def list_movies(self):
-        return self.cursor.execute("""SELECT id, name, rating
+        return self.cursor.execute("""SELECT movies_id, name, rating
             FROM Movies
             """)
 
@@ -49,14 +49,14 @@ class CreateDB:
         self.db.commit()
 
     def add_projection(self, movie_id, projection_type, projection_date, time):
-        self.cursor.execute("""INSERT INTO Projections(movie_id, type, projection_date, time)
+        self.cursor.execute("""INSERT INTO Projections(movie_id, projection_type, projection_date, time)
             VALUES(?, ?, ?, ?)
             """, (movie_id, projection_type, projection_date, time))
         self.db.commit()
 
     def list_projections(self):
         return self.cursor.execute(
-            """SELECT a.projections_id, b.name, a.projection_type, a.projection_date, a.type
+            """SELECT a.projections_id, b.name, a.projection_type, a.projection_date, a.time
             FROM Projections AS a
             JOIN Movies AS b
             ON a.movie_id = b.movies_id
