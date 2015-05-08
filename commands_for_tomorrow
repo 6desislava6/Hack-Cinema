@@ -1,42 +1,42 @@
 commands_for_tomorrow:
 ===============
 
-0.
-tableID
-#The name of the tables with seats
-seats_projectionID = 'Seats_{}'.format(tableID)
+            0.
+            tableID
+            #The name of the tables with seats
+            seats_projectionID = 'Seats_{}'.format(tableID)
 
-1. --CreateDB---
-#When adding new projection, make new seats_table
-self.cursor.execute('''CREATE TABLE ?(seat_id INTEGER PRIMARY KEY, free INTEGER);
-''', (seats_projectionID,))
+            1. --CreateDB---
+            #When adding new projection, make new seats_table
+            self.cursor.execute('''CREATE TABLE ?(seat_id INTEGER PRIMARY KEY, free INTEGER);
+            ''', (seats_projectionID,))
 
-# Making free seats in seats_projectionID
-for i in range(0, COL_SIZE*ROW_SIZE):
-    self.cursor.execute('''INSERT INTO ?(free) Values(0)''',(seats_projectionID,))
+            # Making free seats in seats_projectionID
+            for i in range(0, COL_SIZE*ROW_SIZE):
+                self.cursor.execute('''INSERT INTO ?(free) Values(0)''',(seats_projectionID,))
 
-2.  --CreateDB---
-# Checking if there are enough seats in a projection
-def are_enough_seats(self, wanted_seats, seats_projectionID):
-    data = self.cursor.execute('''SELECT Count(seat_id), Free FROM ? WHERE Free = 1 GROUP BY Free;''', (seats_projectionID,))
-    free_seats = data['Count(seat_id)']
-        return free_seats < wanted_seats
+            2.  --CreateDB---
+            # Checking if there are enough seats in a projection
+            def are_enough_seats(self, wanted_seats, seats_projectionID):
+                data = self.cursor.execute('''SELECT Count(seat_id), Free FROM ? WHERE Free = 1 GROUP BY Free;''', (seats_projectionID,))
+                free_seats = data['Count(seat_id)']
+                    return free_seats < wanted_seats
 
-3.  --CreateDB---
-#Get all available:
-def get_available_seats(self):
-    free_seats = []
-    data = self.cursor.execute('''SELECT seat_id FROM ? where Free = 1;''', (seats_projectionID,))
-    for line in data:
-        free_seats.append(self.__hash(line['seat_id']))
-    return free_seats
-    # free_seats is a set of tuples!
+            3.  --CreateDB---
+            #Get all available:
+            def get_available_seats(self):
+                free_seats = []
+                data = self.cursor.execute('''SELECT seat_id FROM ? where Free = 1;''', (seats_projectionID,))
+                for line in data:
+                    free_seats.append(self.__hash(line['seat_id']))
+                return free_seats
+                # free_seats is a set of tuples!
 
-4.  --CreateDB---
-def __hash(id):
-    row = id // ROW_SIZE
-    col = id % COL_SIZE
-    return (row, col)
+            # 4.  --CreateDB---
+            # def __hash(id):
+            #     row = id // ROW_SIZE + 1
+            #     col = id % ROW_SIZE
+            #     return (row, col)
 
 5. --IO--
 # Process of buying tickets
@@ -55,7 +55,7 @@ def buy_tickets(db):
     #We seek info from this table:
     seats_projectionID = 'Seats_{}'.format(wanted_projection)
 
-    if  not db.are_enough_seats(self, wanted_seats, seats_projectionID):
+    if  not db.are_enough_seats(self, wanted_seats, wanted_projection):
         print('Not enough tickets!')
         return
 
@@ -104,29 +104,29 @@ def __str_to_numbers(answer_customer):
     numers[1] = numbers[1][:1]
 
 
-8. --CreateDB---
-def __unhash(seat):
-    row = seat[0]
-    col = seat[1]
-    return row * ROW_SIZE + col * COL_SIZE
+            # 8. --CreateDB---
+            # def __unhash(seat):
+            #     row = seat[0]
+            #     col = seat[1]
+            #     return (row - 1) * ROW_SIZE + col
 
-9.  --CreateDB---
-def save_seat(seat):
-    seat_id = self.__unhash(seat)
-    *********Заявка за upgrade seat_id да е Free = 0 ********************
+            9.  --CreateDB---
+            def save_seat(seat):
+                seat_id = self.__unhash(seat)
+                *********Заявка за upgrade seat_id да е Free = 0 ********************
 
-10. --CreateDB--
-def undo_reservation(count):
-    last_id = self.db.lastrowid
-    self.cursor.execute('''delete from reservation
-    where reservations_id IN
-    (SELECT reservations_id from reservations order by reservations_id desc limit ?)''', (count, ))
+            10. --CreateDB--
+            def undo_reservation(count):
+                last_id = self.db.lastrowid
+                self.cursor.execute('''delete from reservation
+                where reservations_id IN
+                (SELECT reservations_id from reservations order by reservations_id desc limit ?)''', (count, ))
 
-11. --CreateDB---
-def show_movie_projections(self, movie_id):
-    return self.cursor.execute('''SELECT * FROM projections
-                                            WHERE movie_id = ?
-                                            ORDER BY projection_date''', (movie_id, ))
+            11. --CreateDB---
+            def show_movie_projections(self, movie_id):
+                return self.cursor.execute('''SELECT * FROM projections
+                                                        WHERE movie_id = ?
+                                                        ORDER BY projection_date''', (movie_id, ))
 
 12. --IO__
 def show_movie_projections(self, movie_id, db):

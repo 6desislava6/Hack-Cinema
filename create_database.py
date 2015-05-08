@@ -2,6 +2,9 @@ import sqlite3
 
 
 class CreateDB:
+    COL_SIZE = 10
+    ROW_SIZE = 10
+
     def __init__(self):
         self.db = sqlite3.connect('HackCinema')
         # gets the response of the query in dict format
@@ -25,7 +28,7 @@ class CreateDB:
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS Reservations(
             reservations_id INTEGER PRIMARY KEY,
             username TEXT,
-            projection_id INTEGER
+            projection_id INTEGER,
             row INTEGER,
             col INTEGER,
             FOREIGN KEY(projection_id) REFERENCES Projections(projections_id))
@@ -67,3 +70,64 @@ class CreateDB:
             WHERE projections_id = (?)
             """, (projection_id, ))
         self.db.commit()
+
+#    @staticmethod
+#    def __hash(id_seat):
+#        col = -1
+#        if id_seat % CreateDB.COL_SIZE == 0:
+#            col = CreateDB.COL_SIZE
+#            row = id_seat // (CreateDB.ROW_SIZE)
+#        else:
+#            col = id_seat % CreateDB.COL_SIZE
+#            row = id_seat // (CreateDB.ROW_SIZE) + 1
+#        return (row, col)
+#
+#    @staticmethod
+#    def __unhash(seat):
+#        row = seat[0]
+#        col = seat[1]
+#        return (row - 1) * CreateDB.ROW_SIZE + col
+
+    def are_enough_seats(self, wanted_seats, projection_id):
+        self.cursor.execute("""SELECT Count(projection_id)
+            FROM Reservations
+            WHERE projection_id = ?
+            """, (projection_id, ))
+        data = self.cursor.fetchone()
+        free_seats = CreateDB.ROW_SIZE * CreateDB.COL_SIZE - int(data['Count(projection_id)'])
+        return free_seats >= wanted_seats
+
+    def get_available_seats(self, wanted_projection):
+        free_seats = [(i, j) for i in range(1, CreateDB.ROW_SIZE + 1) for j in range(1, CreateDB.COL_SIZE + 1)]
+        self.cursor.execute("""SELECT row, col
+            FROM Reservations
+            WHERE projection_id = ?
+            """, (wanted_projection, ))
+        taken_seats = self.cursor.fetchall()
+        for seat in taken_seats:
+            free_seats.remove((seat['row'], seat['col']))
+        return free_seats
+        # free_seats is a list of tuples!
+
+    def show_movie_projections(self, movie_id):
+        return self.cursor.execute("""SELECT * FROM Projections
+                                               JOIN Movies
+                                               ON movie_id = movies_id
+                                               WHERE movie_id = ?
+                                               ORDER BY projection_date""",
+                                   (movie_id, ))
+
+    def make_reservation(self, username, projection_id, row, col):
+        self.cursor.execute("""INSERT INTO Reservations(username, projection_id, row, col)
+            VALUES (?, ?, ?, ?)
+            """, (username, projection_id, row, col))
+    # save_seat по стария начин
+
+    def undo_reservation(self, count):
+        self.cursor.execute("""DELETE FROM Reservations
+        WHERE reservations_id IN
+        (SELECT reservations_id
+         FROM Reservations
+         ORDER BY reservations_id
+         DESC LIMIT ?)""",
+                            (count, ))
