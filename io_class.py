@@ -104,6 +104,7 @@ class IO:
         user_input = input('Answer>')
         if user_input == 'n':
             db.undo_reservation(wanted_tickets)
+            return
         print(wanted_tickets)
         IO.show_reservations(db,    wanted_tickets)
 
