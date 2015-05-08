@@ -71,23 +71,6 @@ class CreateDB:
             """, (projection_id, ))
         self.db.commit()
 
-#    @staticmethod
-#    def __hash(id_seat):
-#        col = -1
-#        if id_seat % CreateDB.COL_SIZE == 0:
-#            col = CreateDB.COL_SIZE
-#            row = id_seat // (CreateDB.ROW_SIZE)
-#        else:
-#            col = id_seat % CreateDB.COL_SIZE
-#            row = id_seat // (CreateDB.ROW_SIZE) + 1
-#        return (row, col)
-#
-#    @staticmethod
-#    def __unhash(seat):
-#        row = seat[0]
-#        col = seat[1]
-#        return (row - 1) * CreateDB.ROW_SIZE + col
-
     def are_enough_seats(self, wanted_seats, projection_id):
         self.cursor.execute("""SELECT Count(projection_id)
             FROM Reservations
@@ -122,6 +105,7 @@ class CreateDB:
             VALUES (?, ?, ?, ?)
             """, (username, projection_id, row, col))
     # save_seat по стария начин
+        self.db.commit()
 
     def undo_reservation(self, count):
         self.cursor.execute("""DELETE FROM Reservations
@@ -131,3 +115,16 @@ class CreateDB:
          ORDER BY reservations_id
          DESC LIMIT ?)""",
                             (count, ))
+        self.db.commit()
+
+    def show_last_n_reservations(self, count):
+        return self.cursor.execute("""SELECT name, username, projection_date, row, col
+        FROM (SELECT * FROM (SELECT * FROM Reservations
+        WHERE reservations_id IN
+        (SELECT reservations_id
+         FROM Reservations
+         ORDER BY reservations_id
+         DESC LIMIT ?)) as a JOIN Projections as b
+         ON a.projection_id = b.projections_id) as c
+        JOIN Movies as d ON c.movie_id = d.movies_id
+         """, (count, ))

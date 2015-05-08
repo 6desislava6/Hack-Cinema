@@ -1,3 +1,4 @@
+import re
 from create_database import CreateDB
 
 
@@ -36,42 +37,30 @@ class IO:
         print('Commands:')
         print('* "show_movies"')
         print('* "show_projections"')
-        print('* "show_movie_projections"')
         print('* "make_reservation"')
         print('* "help"')
         print('* "exit"')
 
     @staticmethod
-    def exit(database):
-        print('Bye!')
-        return 0
-
-    @staticmethod
-    def __str_to_numbers(answer_customer):
-        numbers = answer_customer.split(', ')
-        numbers[0] = numbers[0][1:]
-        numbers[1] = numbers[1][:1]
-        return numbers
-
-    @staticmethod
     def make_reservation(database):
-        pass
+        username = input('Type your username: ')
+        IO.buy_tickets(database, username)
 
     @staticmethod
-    def execute_command(database, user_input):
+    def execute_command(database):
+        user_input = input('command>')
         all_commands = {
-                        "exit": IO.exit,
                         "show_movies": IO.show_movies,
                         "show_projections": IO.show_projections,
-                        "show_movie_projections": IO.show_movie_projections,
                         "make_reservation": IO.make_reservation,
                         "help": IO.help
-
         }
-        try:
-            all_commands[user_input](database)
-        except:
-            print("Invalid command!")
+        if user_input in all_commands:
+            if user_input != 'exit':
+                all_commands[user_input](database)
+        if user_input == 'exit':
+            return False
+        return True
 
     @staticmethod
     def print_seats(free_seats):
@@ -108,9 +97,54 @@ class IO:
             print('Free seats for this projection are: ')
             free_seats = db.get_available_seats(wanted_projection)
             IO.print_seats(free_seats)
-            answer_customer = input("""your choice (in format (x, y),
-            please. Otherwise it will not work :D)>""")
-
-            seat = IO.__str_to_numbers(answer_customer)
-            print(seat)
+            seat = IO.__make_seats(free_seats)
             db.make_reservation(username, wanted_projection, seat[0], seat[1])
+
+        print('Do you confirm your reservation? y/n')
+        user_input = input('Answer>')
+        if user_input == 'n':
+            db.undo_reservation(wanted_tickets)
+        print(wanted_tickets)
+        IO.show_reservations(db,    wanted_tickets)
+
+    @staticmethod
+    def __find_numbers_regex(customer_input):
+        regular_expression = re.compile('\d+')
+        matches = regular_expression.findall(customer_input)
+        result = []
+        for number in matches:
+            result.append(int(number))
+
+        return tuple(result)
+
+    @staticmethod
+    def __validate_seat(seat, free_seats):
+        return seat in free_seats
+
+    @staticmethod
+    def __make_seats(free_seats):
+        answer_customer = input("""your choce>""")
+        seat = IO.__find_numbers_regex(answer_customer)
+        print(seat)
+        is_valid_seat = IO.__validate_seat(seat, free_seats)
+
+        while not is_valid_seat:
+            print('This is not a valid seat! Type again!')
+            answer_customer = input("""your choce>""")
+            seat = IO.__find_numbers_regex(answer_customer)
+            is_valid_seat = IO.__validate_seat(seat, free_seats)
+        return seat
+
+    @staticmethod
+    def show_reservations(db, count):
+        reservations_raw = db.show_last_n_reservations(count)
+        for line in reservations_raw:
+            name = line['username']
+            projection_date = line['projection_date']
+            movie_name = line['name']
+            row = line['row']
+            col = line['col']
+            reservation = 'username: {}, movie: {} ---> {}, place ({}, {})'.format(name, movie_name, projection_date, row, col)
+            print(reservation)
+
+
