@@ -1,0 +1,9 @@
+# All
+http://effbot.org/tkinterbook/
+# Events
+http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
+# Control variables: the values behind the widgets
+http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/control-variables.html
+# Top level widget
+http://effbot.org/tkinterbook/toplevel.html
+
