@@ -112,7 +112,7 @@ class GUI:
                     self.cinema_database.make_reservation(self.get_username(), projection_id, seat[0], seat[1])
 
             message = self.show_reservations(count_reserved)
-            messagebox.showinfo(title='reservations', message=message)
+            messagebox.showinfo(title='reservations', message=message, width=3)
             toplevel.destroy()
             return
 
